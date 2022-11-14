@@ -14,7 +14,7 @@ class Tracker:
         self.balance = 0
         self.date = date.today()
         # self.file = "bet_tracker.csv"
-        self.df = pd.read_csv(self.filename) if os.path.exists(self.filename) else 'default' 
+        self.df = pd.read_csv(self.filename) if os.path.exists(self.filename) else None
 
     def write_csv(self, profit):
         inputs = parse_args()
