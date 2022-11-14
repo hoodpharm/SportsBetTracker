@@ -4,7 +4,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         prog = "Bet Tracker",
         description = "Track sports betting profits/losses. Profits are shown without wager.")
-    parser.add_argument("filename", help="file to append to. Creates new file if doesnt exist.")
+    parser.add_argument("filename", help="file to append to. Creates new file if doesnt exist, use .csv extention")
     parser.add_argument("-b", "--bet", metavar='', help="bet took, e.g. 'Warriors ML' ")
     parser.add_argument("-o", "--odds", metavar='', help="american odds", type=int)
     parser.add_argument("-w", "--wager", metavar='', help="bet amount", type=int)
