@@ -12,5 +12,6 @@ def parse_args():
     parser.add_argument("--read_file", help="read contents of file", action="store_true")
     parser.add_argument("--profits", help="calculate total Win/Loss", action="store_true")
     parser.add_argument("--total_bets", help="show total number of bets made", action="store_true")
+    parser.add_argument("--max_win", help="show max win", action="store_true")
     args = vars(parser.parse_args())
     return args

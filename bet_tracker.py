@@ -9,6 +9,7 @@ from banner import banner
 from colorama import Fore, Style
 from time import sleep
 
+
 class Tracker:
     def __init__(self):
         self.filename = parse_args()["filename"]
@@ -44,6 +45,9 @@ class Tracker:
     def read_file(self):
         print(self.df)
 
+    def max_win(self):
+        print(self.df.loc[self.df["Profit"].idxmax()])
+
     def total_bets(self):
         first_bet_logged = self.df.Date[0]
         print(f"You've made {len(self.df)} bets since {first_bet_logged}.")
@@ -57,6 +61,8 @@ class Tracker:
 
     def main(self):
         inputs = parse_args()
+        if inputs["max_win"]:
+            self.max_win()
         if inputs["total_bets"]:
             self.total_bets()
         if inputs["read_file"]:
@@ -86,7 +92,7 @@ if __name__ == "__main__":
     else:
         system("cls")
         
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 2:
         sys.exit("No arguments were given. type -h for help.")
     else:
         t.main()
