@@ -6,6 +6,7 @@ from parse import parse_args
 from os import system, name as op_sys
 from datetime import date
 from banner import banner
+from colorama import Fore, Style
 from time import sleep
 
 class Tracker:
@@ -22,20 +23,23 @@ class Tracker:
         header = ["Date", "Bet", "Odds", "Wager", "W/L", "Profit"]
         data = [self.date, inputs["bet"], inputs["odds"], inputs["wager"],inputs["outcome"].upper(), profit]
         if not file_exists:
-            print("creating file", self.filename)
+            print(f"{Fore.YELLOW}Creating file {self.filename}{Style.RESET_ALL}")
             sleep(1)
             with open(self.filename, "w", encoding="UTF-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerow(data)
+            
+            print('[+]', end='')
             print(*data, sep=", ")
-            print(f"File was created and data Saved to: {f.name}")
+            print(f"{Fore.GREEN}File was created and data Saved to: {f.name}{Style.RESET_ALL}")
         else:
             with open(self.filename, "a", encoding="UTF-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(data)
+            print('[+]', end='')
             print(*data, sep=", ")
-            print(f"Data Saved to: {f.name}")
+            print(f"{Fore.GREEN}Data Saved to: {f.name}{Style.RESET_ALL}")
 
     def read_file(self):
         print(self.df)
@@ -47,9 +51,9 @@ class Tracker:
     def calculate_profits(self):
         profit = self.df.Profit
         if profit.sum() > 0:
-            print(f"Your total winnings as of, {self.df.Date[0]}: ${round(profit.sum(), 2)}")
+            print(f"Your total winnings as of, {self.df.Date[0]}: {Fore.GREEN}${round(profit.sum(), 2)}{Style.RESET_ALL}")
         else:
-            print(f"As of, {self.df.Date[0]}, you are currently down: -${-round(profit.sum(), 2)}")
+            print(f"Since {self.df.Date[0]}, you are down: {Fore.RED}-${-round(profit.sum(), 2)}{Style.RESET_ALL}")
 
     def main(self):
         inputs = parse_args()
