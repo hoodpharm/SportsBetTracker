@@ -15,14 +15,13 @@ class Tracker:
         self.filename = parse_args()["filename"]
         self.balance = 0
         self.date = date.today()
-        # self.file = "bet_tracker.csv"
-        self.df = pd.read_csv(self.filename) if os.path.exists(self.filename) else None
+        self.df = pd.read_csv(self.filename, parse_dates=["Date"]) if os.path.exists(self.filename) else None
 
-    def write_csv(self, profit):
+    def write_csv(self, profit, total):
         inputs = parse_args()
         file_exists = os.path.exists(self.filename)
-        header = ["Date", "Bet", "Odds", "Wager", "W/L", "Profit"]
-        data = [self.date, inputs["bet"], inputs["odds"], inputs["wager"],inputs["outcome"].upper(), profit]
+        header = ["Date", "Bet", "Odds", "Wager", "W/L", "Profit", "Total Payout"]
+        data = [self.date, inputs["bet"], inputs["odds"], inputs["wager"],inputs["outcome"].upper(), round(float(profit), 2), round(float(total),2)]
         if not file_exists:
             print(f"{Fore.YELLOW}Creating file {self.filename}{Style.RESET_ALL}")
             sleep(1)
@@ -41,12 +40,29 @@ class Tracker:
             print('[+]', end='')
             print(*data, sep=", ")
             print(f"{Fore.GREEN}Data Saved to: {f.name}{Style.RESET_ALL}")
-
+    
     def read_file(self):
-        print(self.df)
+        self.df.set_index("Date", inplace=True)
+        self.df = self.df.sort_values(by="Date")
+        self.df = self.df.fillna({"Total Payout": 0,
+                                    "Profit": 0
+                                    })
+        if parse_args()["v"]:
+            pd.set_option("display.max_rows", None)
+            print(self.df)
+        else:
+            print(self.df)
+            print('Use "-v" to show all rows.')
+
+    def chdate(self):
+        new_date = parse_args()["date"]
+        self.date = new_date
 
     def max_win(self):
-        print(self.df.loc[self.df["Profit"].idxmax()])
+        print(self.df.loc[self.df["Profit"].idxmax()].fillna(0))
+    
+    def max_loss(self):
+        print(self.df.loc[self.df["Profit"].idxmin()].fillna(0))
 
     def total_bets(self):
         first_bet_logged = self.df.Date[0]
@@ -61,8 +77,12 @@ class Tracker:
 
     def main(self):
         inputs = parse_args()
+        if inputs["date"]:
+            self.chdate()
         if inputs["max_win"]:
             self.max_win()
+        if inputs["max_loss"]:
+            self.max_loss()
         if inputs["total_bets"]:
             self.total_bets()
         if inputs["read_file"]:
@@ -73,24 +93,27 @@ class Tracker:
             if inputs["outcome"].upper() == "W":
                 if inputs["odds"] < 0:
                     profit = 100/-(inputs["odds"]) * float(inputs["wager"])
-                    self.write_csv(f"+{round(profit, 2)}")
+                    total = profit + inputs["wager"]
+                    self.write_csv(f"+{round(profit, 2)}", round(total, 2))
                 else:
                     profit = inputs["odds"]/100 * float(inputs["wager"])
-                    self.write_csv(round(profit, 2))
+                    total = profit + inputs["wager"]
+                    self.write_csv(round(profit, 3), total)
             elif inputs["outcome"].upper() == "L":
                 losses = self.balance - (-inputs["wager"])
-                self.write_csv(f"-{losses}")
+                self.write_csv(f"-{losses}", 0)
             else:
-                print("-O flag must contain 'w' or 'l'.")
+                print('-O flag must contain "w" or "l".')
         
 
 if __name__ == "__main__":
     t = Tracker()
     if op_sys != "nt":
         system("clear")
-        banner()
+        banner("future")
     else:
         system("cls")
+        banner("banner3-D")
         
     if len(sys.argv) == 2:
         sys.exit("No arguments were given. type -h for help.")

@@ -1,6 +1,6 @@
 from pyfiglet import Figlet
 
-def banner():
-    f = Figlet(font="future")
+def banner(font):
+    f = Figlet(font=font)
     print(f.renderText("Hoodpharm's Bet Tracker"))
 
