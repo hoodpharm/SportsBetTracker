@@ -5,7 +5,7 @@ import pandas as pd
 from parse import parse_args
 from os import system, name as op_sys
 from datetime import date
-from banner import banner
+from banner import banner, loadbar
 from colorama import Fore, Style
 from time import sleep
 
@@ -24,7 +24,12 @@ class Tracker:
         data = [self.date, inputs["bet"], inputs["odds"], inputs["wager"],inputs["outcome"].upper(), round(float(profit), 2), round(float(total),2)]
         if not file_exists:
             print(f"{Fore.YELLOW}Creating file {self.filename}{Style.RESET_ALL}")
-            sleep(1)
+            lst = list(range(0,25))
+            l = len(lst)
+            for i, _ in enumerate(lst):
+                sleep(0.1)
+                loadbar(i + 1, l, prefix="Progress", suffix="Complete", length=l)
+                
             with open(self.filename, "w", encoding="UTF-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(header)
