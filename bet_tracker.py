@@ -12,16 +12,16 @@ from time import sleep
 
 class Tracker:
     def __init__(self):
-        self.filename = parse_args()["filename"]
-        self.balance = 0
+        self.inputs = parse_args()
         self.date = date.today()
+        self.filename = self.inputs["filename"]
         self.df = pd.read_csv(self.filename, parse_dates=["Date"]) if os.path.exists(self.filename) else None
+        self.balance = 0
 
     def write_csv(self, profit, total):
-        inputs = parse_args()
         file_exists = os.path.exists(self.filename)
         header = ["Date", "Bet", "Odds", "Wager", "W/L", "Profit", "Total Payout"]
-        data = [self.date, inputs["bet"], inputs["odds"], inputs["wager"],inputs["outcome"].upper(), round(float(profit), 2), round(float(total),2)]
+        data = [self.date, self.inputs["bet"], self.inputs["odds"], self.inputs["wager"],self.inputs["outcome"].upper(), round(float(profit), 2), round(float(total),2)]
         if not file_exists:
             print(f"{Fore.YELLOW}Creating file {self.filename}{Style.RESET_ALL}")
             lst = list(range(0,25))
@@ -30,29 +30,31 @@ class Tracker:
                 sleep(0.1)
                 loadbar(i + 1, l, prefix="Progress", suffix="Complete", length=l)
                 
-            with open(self.filename, "w", encoding="UTF-8") as f:
+            with open(self.filename, "w", encoding="UTF-8", newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerow(data)
             
+            print(f"{Fore.GREEN}File was created and data Saved to: {f.name}")
             print('[+]', end='')
-            print(*data, sep=", ")
-            print(f"{Fore.GREEN}File was created and data Saved to: {f.name}{Style.RESET_ALL}")
+            print(*data, sep=', ')
+            print(Style.RESET_ALL)
         else:
-            with open(self.filename, "a", encoding="UTF-8") as f:
+            with open(self.filename, "a", encoding="UTF-8", newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(data)
+
             print('[+]', end='')
             print(*data, sep=", ")
             print(f"{Fore.GREEN}Data Saved to: {f.name}{Style.RESET_ALL}")
     
     def read_file(self):
         self.df.set_index("Date", inplace=True)
-        self.df = self.df.sort_values(by="Date")
+        self.sort()
         self.df = self.df.fillna({"Total Payout": 0,
                                     "Profit": 0
                                     })
-        if parse_args()["v"]:
+        if self.inputs["v"]:
             pd.set_option("display.max_rows", None)
             print(self.df)
         else:
@@ -60,7 +62,7 @@ class Tracker:
             print('Use "-v" to show all rows.')
 
     def chdate(self):
-        new_date = parse_args()["date"]
+        new_date = self.inputs["date"]
         self.date = new_date
 
     def max_win(self):
@@ -69,11 +71,16 @@ class Tracker:
     def max_loss(self):
         print(self.df.loc[self.df["Profit"].idxmin()].fillna(0))
 
+    def sort(self):
+        self.df = self.df.sort_values(by="Date").reset_index(drop=True)
+
     def total_bets(self):
+        self.sort()
         first_bet_logged = self.df.Date[0]
         print(f"You've made {len(self.df)} bets since {first_bet_logged}.")
 
     def calculate_profits(self):
+        self.sort()
         profit = self.df.Profit
         if profit.sum() > 0:
             print(f"Your total winnings as of, {self.df.Date[0]}: {Fore.GREEN}${round(profit.sum(), 2)}{Style.RESET_ALL}")
@@ -81,35 +88,33 @@ class Tracker:
             print(f"Since {self.df.Date[0]}, you are down: {Fore.RED}-${-round(profit.sum(), 2)}{Style.RESET_ALL}")
 
     def main(self):
-        inputs = parse_args()
-        if inputs["date"]:
+        if self.inputs["date"]:
             self.chdate()
-        if inputs["max_win"]:
+        if self.inputs["max_win"]:
             self.max_win()
-        if inputs["max_loss"]:
+        if self.inputs["max_loss"]:
             self.max_loss()
-        if inputs["total_bets"]:
+        if self.inputs["total_bets"]:
             self.total_bets()
-        if inputs["read_file"]:
+        if self.inputs["read_file"]:
             self.read_file()
-        if inputs["profits"]:
+        if self.inputs["profits"]:
             self.calculate_profits()
-        if inputs["outcome"]:
-            if inputs["outcome"].upper() == "W":
-                if inputs["odds"] < 0:
-                    profit = 100/-(inputs["odds"]) * float(inputs["wager"])
-                    total = profit + inputs["wager"]
+        if self.inputs["outcome"]:
+            if self.inputs["outcome"].upper() == "W":
+                if self.inputs["odds"] < 0:
+                    profit = 100/-(self.inputs["odds"]) * float(self.inputs["wager"])
+                    total = profit + self.inputs["wager"]
                     self.write_csv(f"+{round(profit, 2)}", round(total, 2))
                 else:
-                    profit = inputs["odds"]/100 * float(inputs["wager"])
-                    total = profit + inputs["wager"]
+                    profit = self.inputs["odds"]/100 * float(self.inputs["wager"])
+                    total = profit + self.inputs["wager"]
                     self.write_csv(round(profit, 3), total)
-            elif inputs["outcome"].upper() == "L":
-                losses = self.balance - (-inputs["wager"])
+            elif self.inputs["outcome"].upper() == "L":
+                losses = self.balance - (-self.inputs["wager"])
                 self.write_csv(f"-{losses}", 0)
             else:
-                print('-O flag must contain "w" or "l".')
-        
+                print('-O flag must contain "w" or "l".')            
 
 if __name__ == "__main__":
     t = Tracker()
@@ -119,8 +124,19 @@ if __name__ == "__main__":
     else:
         system("cls")
         banner("banner3-D")
+        print(sys.argv)
         
+    if len(sys.argv) >= 3:
+        if "-v" in sys.argv:
+            if not os.path.exists(t.filename):
+                sys.exit(f"Couldn't find '{t.filename}'")
+            else:
+                sys.exit("use -v with double hyphen args only")
+
     if len(sys.argv) == 2:
         sys.exit("No arguments were given. type -h for help.")
     else:
-        t.main()
+       t.main()
+        
+
+        
