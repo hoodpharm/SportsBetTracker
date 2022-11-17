@@ -48,16 +48,16 @@ class Tracker:
             print(*data, sep=", ")
             print(f"{Fore.GREEN}Data Saved to: {f.name}{Style.RESET_ALL}")
     
-    def read_file(self):
-        self.df.set_index("Date", inplace=True)
-        self.sort()
-        self.df = self.df.fillna({"Total Payout": 0,
-                                    "Profit": 0
-                                    })
+    def read_file(self):        
         if self.inputs["v"]:
             pd.set_option("display.max_rows", None)
             print(self.df)
         else:
+            self.df.set_index("Date", inplace=True)
+            self.df = self.df.sort_values(by="Date")
+            self.df = self.df.fillna({"Total Payout": 0,
+                                    "Profit": 0
+                                    })
             print(self.df)
             print('Use "-v" to show all rows.')
 
@@ -124,7 +124,6 @@ if __name__ == "__main__":
     else:
         system("cls")
         banner("banner3-D")
-        print(sys.argv)
         
     if len(sys.argv) >= 3:
         if "-v" in sys.argv:
