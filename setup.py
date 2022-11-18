@@ -13,7 +13,7 @@ setup(
 	author="hoodpharm",
 	author_email="noluckallfinesse@gmail.com",
 	license="MIT",
-	dependencies=["pyfiflet==0.8.post1"]
+	dependencies=["pyfiflet==0.8.post1", "pandas"]
 	classifiers=[
 		"Programming Language :: Python :: 3",
 		"License :: OSI Approved :: MIT License",
